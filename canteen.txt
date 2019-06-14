@@ -1,0 +1,145 @@
+#include<process.h>
+#include<dos.h>
+#include<conio.h>
+#include<stdio.h>
+#include<fstream.h>
+class canteen
+{
+   int odno;
+   char item[40];
+   int price;
+   int qt;
+   public :
+   void getdata()
+   {
+	  cout<<"\n ENTER THE ORDER NO."<<endl;
+	  cin>>odno;
+	  cout<<"\n ENTER THE FOOD ITEM  NAME"<<endl;
+	  gets(item);
+	  cout<<"\n ENTER THE QUANTITY  "<<endl;
+	  cin>>qt;
+	  cout<<"\n ENTER THE PRICE FOR EACH ITEM"<<endl;
+	  cin>>price;
+   }
+   void showdata()
+   {
+	  cout<<"\n\n\nTHE ORDER NO="<<odno;
+	  cout<<"\nTHE FOOD ITEM NAME="<<item;
+	  cout<<"\nTHE QUANTITY="<<qt;
+	  cout<<"\nTHE PRICE FOR EACH ITEM=Rs"<<price;
+	  cout<<"\nTOTAL PRICE =Rs"<<(qt*price);
+   }
+   int retodno()
+   {
+	  return  odno;
+   }
+};
+void main()
+{
+  clrscr();
+  int n,rno,sno,mno;
+  char ans;
+  canteen can;
+  ifstream fp1;
+  ofstream fp2;
+  fstream fp4;
+  cout<<"\n\n\n\t\t\t*********** WELCOME ***********"<<endl;
+  sleep(1);
+  cout<<"\n\t\t      -----------CANTEEN MANGEMENT-------\n\n"<<endl;
+  sleep(1);
+  cout<<"\tDEVELOPER-:SOUROV SARKAR"<<endl;
+  
+  while(n!=6)
+  {
+   cout<<"\n\t\t\t\t1.DISPLAY"<<endl;
+   cout<<"\n\t\t\t\t2.ORDER ENTRY"<<endl;
+   cout<<"\n\t\t\t\t3.ORDER SEARCH"<<endl;
+   cout<<"\n\t\t\t\t4.MODIFY ORDER"<<endl;
+   cout<<"\n\t\t\t\t5.REMOVE ORDER"<<endl;
+   cout<<"\n\t\t\t\t6.EXIT"<<endl;
+   cout<<"\n\t\t\t---ENTER  YOUR  CHOICE----"<<endl;
+   cin>>n;
+   clrscr();
+   switch(n)
+   {
+	  case 1:
+			 cout<<"\n\n\t\tDISPLAY  "<<endl; //to display records of file
+			 fp1.open("canteen.dat",ios::binary);
+			 while(fp1.read((char*)&can,sizeof(can)))
+			 {
+				  can.showdata();
+			 }
+			 fp1.close();
+			 break;
+	  case 2:
+			 cout<<"\n\n\t\tORDER ENTRY  " <<endl; //to write in a binary file
+			 fp2.open("canteen.dat",ios::binary|ios::app);
+			 do
+			 {
+				can.getdata();
+				fp2.write((char*)&can,sizeof(can));
+				cout<<"DO YOU WANT TO ENTER MORE ORDER (y/Y) :"<<endl;
+				cin>>ans;
+			 }
+			 while(ans=='y'||ans=='Y');
+			 fp2.close();
+			 break;
+	  case 3:
+			 cout<<"\n\n\t\tSEARCH  ORDER "; //to search and display from binary file
+			 fp1.open("canteen.dat",ios::binary);
+			 cout<<"\nENTER THE ORDER NO."<<endl;
+			 cin>>sno;
+			 while(fp1.read((char*)&can,sizeof(can)))
+			 {
+				 if(can.retodno()==sno)
+				 can.showdata();
+			 }
+			 fp1.close();
+			 break;
+	  case 4:
+			 cout<<"\n\t\tMODIFY ORDER "<<endl; //to modify a record
+			 int found=0;
+			 cout<<"ENTER THE ORDER NO."<<endl;
+			 cin>>mno;
+			 fp4.open("canteen.dat",ios::binary|ios::in|ios::out);
+			 while(fp4.read((char*)&can,sizeof(can)) && found==0)
+			 {
+				   if(can.retodno()==mno)
+				   {
+						can.showdata();
+						cout<<"\n\nENTER THE NEW DETAILS"<<endl;
+						can.getdata();
+						int pos=-1*sizeof(can);
+						fp4.seekp(pos,ios::cur);
+						fp4.write((char*)&can,sizeof(can));
+						found=1;       
+
+				   }
+			  }
+			  fp4.close();
+			  break;
+	  case 5:
+			 cout<<"\n\n\t\tREMOVE ORDER   "<<endl; //to delete a record
+			 cout<<"\n\n\nENTER THE ORDER NO."<<endl;
+			 cin>>rno;
+			 fp1.open("canteen.dat",ios::binary);
+			 fp2.open("cpy.dat",ios::app|ios::out|ios::binary);
+			 while(fp1.read((char*)&can,sizeof(can)))
+			 {
+				   if(can.retodno() != rno)
+						 fp2.write((char*)&can,sizeof(can));
+			 }
+			 fp1.close();
+			 fp2.close();
+			 remove("canteen.dat");
+			 rename("cpy.dat","canteen.dat");
+			 break;
+	  case 6:
+				exit(0);
+	  default :
+			 cout<<"\n\n\n\tERROR"<<endl;
+			 break;
+   }
+  }
+  getch();
+}
